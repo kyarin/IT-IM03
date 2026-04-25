@@ -32,20 +32,7 @@
             border: 2px solid #d4af37;
             position: relative;
         }
-        .mascot {
-            position: absolute;
-            top: -70px;
-            right: -50px;
-            width: 150px;
-            pointer-events: none;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
+
         h2 {
             margin-bottom: 24px;
             font-size: 26px;
@@ -107,7 +94,7 @@
 </head>
 <body>
     <div class="register-container">
-        <img src="assets/paimon_cheer.png" class="mascot" alt="Cute Mascot">
+
         <h2>Register</h2>
         <form action="register.php" method="POST">
             <div class="form-group">

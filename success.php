@@ -34,13 +34,8 @@
             pointer-events: none;
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
             animation: float 3s ease-in-out infinite;
-            margin-bottom: -20px;
+
             margin-top: -80px;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
         }
         h2 {
             margin-bottom: 16px;
@@ -88,7 +83,7 @@
         <img src="assets/paimon_cheer.png" class="mascot" alt="Cute Mascot">
         <br>
         <h2>Registration Successful!</h2>
-        <p>Your account has been created securely.</p>
+        <p>Your account has been created successfully.</p>
         <a href='User_reg.html' class='back-link'>RETURN</a>
     </div>
 </body>
