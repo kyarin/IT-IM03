@@ -139,7 +139,7 @@
         </form>
         
         <div class="register-link">
-            Don't have an account? <a href="User_reg.html">Register here</a>
+            Don't have an account? <a href="User_reg.php">Register here</a>
         </div>
     </div>
 </body>

@@ -84,7 +84,7 @@
         <br>
         <h2>Registration Successful!</h2>
         <p>Your account has been created successfully.</p>
-        <a href='User_reg.html' class='back-link'>RETURN</a>
+        <a href='User_login.php' class='back-link'>PROCEED TO LOGIN</a>
     </div>
 </body>
 </html>

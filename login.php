@@ -3,12 +3,12 @@ session_start();
 require 'vendor/autoload.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: User_login.html");
+    header("Location: User_login.php");
     exit;
 }
 
 if (empty($_POST['email']) || empty($_POST['password'])) {
-    header("Location: User_login.html?error=missing");
+    header("Location: User_login.php?error=missing");
     exit;
 }
 
@@ -23,12 +23,12 @@ try {
     $user = $collection->findOne(["email" => $email]);
 
     if (!$user) {
-        header("Location: User_login.html?error=invalid");
+        header("Location: User_login.php?error=invalid");
         exit;
     }
 
     if (!password_verify($password, $user['password'])) {
-        header("Location: User_login.html?error=invalid");
+        header("Location: User_login.php?error=invalid");
         exit;
     }
 
@@ -37,12 +37,12 @@ try {
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['logged_in'] = true;
 
-    header("Location: User_reg.html"); // CHANGE IF IBA ANG LOCATION AFTER.
+    header("Location: User_address.php");
     exit;
 
 } catch (Exception $e) {
     error_log("Login error: " . $e->getMessage());
-    header("Location: User_login.html?error=system");
+    header("Location: User_login.php?error=system");
     exit;
 }
 ?>
