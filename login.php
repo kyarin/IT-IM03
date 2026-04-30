@@ -20,7 +20,13 @@ try {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    $user = $collection->findOne(["email" => $email]);
+    // Unit 8, Operator 4: $and (verify email AND status active)
+    $user = $collection->findOne([
+        '$and' => [
+            ["email" => $email],
+            ["status" => "active"]
+        ]
+    ]);
 
     if (!$user) {
         header("Location: User_login.php?error=invalid");
@@ -36,8 +42,13 @@ try {
     $_SESSION['user_name'] = $user['name'];
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['logged_in'] = true;
+    $_SESSION['role'] = $user['role'] ?? 'user';
 
-    header("Location: User_address.php");
+    if (isset($user['role']) && $user['role'] === 'admin') {
+        header("Location: admin.php");
+    } else {
+        header("Location: User_address.php");
+    }
     exit;
 
 } catch (Exception $e) {

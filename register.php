@@ -23,6 +23,7 @@ $insertOneResult = $collection->insertOne([
     "password" => $hashedPassword,
     "age" => $age,
     "contact" => $contact,
+    "status" => "active",
     "date_registered" => new MongoDB\BSON\UTCDateTime()
 ]);
 

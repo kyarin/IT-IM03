@@ -1,5 +1,6 @@
 <?php
 session_start();
+require 'vendor/autoload.php';
 
 if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
     header("Location: User_login.php");
@@ -7,31 +8,66 @@ if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
 }
 
 $user_id = $_SESSION['user_id'];
-$user_name = $_SESSION['user_name'];
+$user_name = $_SESSION['user_name']; // Fallback
 
-$menuItems = [
-    ['name' => 'Steak', 'rarity' => 1, 'price' => 30, 'desc' => 'Revives a character (basic food)'],
-    ['name' => 'Mondstadt Grilled Fish', 'rarity' => 1, 'price' => 35, 'desc' => 'Simple early-game healing dish'],
-    ['name' => 'Radish Veggie Soup', 'rarity' => 1, 'price' => 40, 'desc' => 'Gradual healing over time'],
-    ['name' => 'Mora Meat', 'rarity' => 1, 'price' => 45, 'desc' => 'Cheap revive food'],
-    ['name' => 'Sweet Madame', 'rarity' => 2, 'price' => 90, 'desc' => 'One of the most popular healing foods'],
-    ['name' => 'Fried Radish Balls', 'rarity' => 2, 'price' => 100, 'desc' => 'Boosts ATK for the party'],
-    ['name' => 'Tea Break Pancake', 'rarity' => 2, 'price' => 80, 'desc' => 'Revive + moderate healing'],
-    ['name' => 'Mushroom Pizza', 'rarity' => 3, 'price' => 180, 'desc' => 'Strong healing over time'],
-    ['name' => 'Mondstadt Hash Brown', 'rarity' => 3, 'price' => 170, 'desc' => 'High HP restoration'],
-    ['name' => "Adeptus' Temptation", 'rarity' => 5, 'price' => 500, 'desc' => 'Extremely powerful buff food (top-tier rarity)'],
-];
+try {
+    $conn = new MongoDB\Client("mongodb://localhost:27017");
+    $db = $conn->paimon_db;
+    $usersCollection = $db->user_reg;
+    $menuCollection = $db->menu;
+
+    // Unit 5, Variation 4: Projection 0 (Fetch user without password)
+    // _id might be a string in session from our previous code, let's use the email or string id
+    // actually in login.php we set $_SESSION['user_id'] = (string)$user['_id'];
+    $userData = $usersCollection->findOne(
+        ['_id' => new MongoDB\BSON\ObjectId($user_id)],
+        ['projection' => ['password' => 0]]
+    );
+    if ($userData) {
+        $user_name = $userData['name'];
+    }
+
+    // Build query based on filters
+    $query = [
+        'status' => ['$ne' => 'inactive'] // Exclude deactivated items
+    ];
+
+    // Unit 8, Operator 2: $regex (Search)
+    if (!empty($_GET['search'])) {
+        $query['name'] = ['$regex' => $_GET['search'], '$options' => 'i'];
+    }
+
+    // Unit 8, Operator 1: $lt (Budget meals < 150)
+    if (isset($_GET['budget']) && $_GET['budget'] === '1') {
+        $query['price'] = ['$lt' => 150];
+    }
+
+    // Unit 8, Operator 3: $in (Categories)
+    if (!empty($_GET['categories']) && is_array($_GET['categories'])) {
+        $query['category'] = ['$in' => $_GET['categories']];
+    }
+
+    // Unit 5, Variation 1: Empty/Base Find (Retrieving all documents when $query is empty)
+    $menuCursor = $menuCollection->find($query);
+    $menuItems = iterator_to_array($menuCursor);
+
+} catch (Exception $e) {
+    die("Database Error: " . $e->getMessage());
+}
 
 $rarityConfig = [
     1 => ['label' => '1-Star', 'stars' => '⭐', 'color' => '#90a4ae', 'glow' => 'rgba(144,164,174,0.25)'],
     2 => ['label' => '2-Star', 'stars' => '⭐⭐', 'color' => '#66bb6a', 'glow' => 'rgba(102,187,106,0.25)'],
     3 => ['label' => '3-Star', 'stars' => '⭐⭐⭐', 'color' => '#42a5f5', 'glow' => 'rgba(66,165,245,0.25)'],
+    4 => ['label' => '4-Star', 'stars' => '⭐⭐⭐⭐', 'color' => '#ab47bc', 'glow' => 'rgba(171,71,188,0.25)'], // Added 4-star just in case
     5 => ['label' => '5-Star', 'stars' => '⭐⭐⭐⭐⭐', 'color' => '#ffa726', 'glow' => 'rgba(255,167,38,0.35)'],
 ];
 
 $grouped = [];
 foreach ($menuItems as $item) {
-    $grouped[$item['rarity']][] = $item;
+    // MongoDB returns BSONDocuments, cast rarity to int
+    $rarity = (int)($item['rarity'] ?? 1);
+    $grouped[$rarity][] = $item;
 }
 ksort($grouped);
 ?>
@@ -282,11 +318,47 @@ ksort($grouped);
         </div>
     </header>
 
+    <!-- FILTERS -->
+    <div style="max-width: 1200px; margin: 20px auto 0; padding: 0 28px;">
+        <form action="menu.php" method="GET" style="background: white; padding: 16px 20px; border-radius: 12px; border: 1px solid #cbd5e1; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+            <div>
+                <input type="text" name="search" placeholder="Search menu..." value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" style="padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: inherit; outline: none;">
+            </div>
+            <div>
+                <label style="font-size: 14px; font-weight: 600; color: #1e293b; cursor: pointer;">
+                    <input type="checkbox" name="budget" value="1" <?php if(isset($_GET['budget']) && $_GET['budget'] == '1') echo 'checked'; ?>> 
+                    Budget Meals (< ₱150)
+                </label>
+            </div>
+            <div style="display: flex; gap: 14px; align-items: center; border-left: 2px solid #e2e8f0; padding-left: 20px;">
+                <span style="font-size: 14px; font-weight: 700; color: #475569;">Categories:</span>
+                <?php 
+                $allCats = ['Main', 'Soup', 'Snack', 'Dessert', 'Drink'];
+                $selectedCats = $_GET['categories'] ?? [];
+                foreach ($allCats as $cat): 
+                    $checked = in_array($cat, $selectedCats) ? 'checked' : '';
+                ?>
+                    <label style="font-size: 14px; color: #1e293b; cursor: pointer;">
+                        <input type="checkbox" name="categories[]" value="<?= $cat ?>" <?= $checked ?>> <?= $cat ?>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+            <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
+                <button type="submit" style="padding: 10px 20px; background: #1e293b; color: #d4af37; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Apply Filters</button>
+                <a href="menu.php" style="font-size: 13px; color: #64748b; text-decoration: underline;">Clear</a>
+            </div>
+        </form>
+    </div>
+
     <!-- FORM WRAPPING THE WHOLE MENU -->
     <form action="place_order.php" method="POST">
         
         <div class="menu-area">
-            <?php foreach ($grouped as $rarity => $items):
+            <?php 
+            if (empty($grouped)) {
+                echo "<div style='text-align:center; padding: 40px; color: #64748b;'>No items found matching your filters.</div>";
+            }
+            foreach ($grouped as $rarity => $items):
                 $cfg = $rarityConfig[$rarity];
                 ?>
                 <div class="rarity-section">

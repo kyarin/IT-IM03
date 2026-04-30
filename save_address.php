@@ -33,6 +33,9 @@ $street   = trim($_POST['street']);
 $house_no = trim($_POST['house_no']);
 $label    = trim($_POST['label']);
 
+$lat = isset($_POST['latitude']) ? (float)$_POST['latitude'] : 0.0;
+$lng = isset($_POST['longitude']) ? (float)$_POST['longitude'] : 0.0;
+
 try {
     $conn = new MongoDB\Client("mongodb://localhost:27017");
     $db = $conn->paimon_db;
@@ -47,6 +50,10 @@ try {
         "street"    => $street,
         "house_no"  => $house_no,
         "label"     => $label,
+        "location"  => [
+            'type' => 'Point',
+            'coordinates' => [$lng, $lat]
+        ],
         "created_at" => new MongoDB\BSON\UTCDateTime()
     ]);
 

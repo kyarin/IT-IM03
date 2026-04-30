@@ -10,9 +10,31 @@ if (!isset($_SESSION['last_order'])) {
     exit;
 }
 
-$order     = $_SESSION['last_order'];
+$session_order = $_SESSION['last_order'];
 $user_name = $_SESSION['user_name'];
 unset($_SESSION['last_order']); // consume receipt
+
+// Unit 5, Variation 2: Parameter Find (Fetch order from DB based on ID)
+try {
+    require 'vendor/autoload.php';
+    $conn = new MongoDB\Client("mongodb://localhost:27017");
+    $db = $conn->paimon_db;
+    $ordersCollection = $db->user_orders;
+    
+    $order = $ordersCollection->findOne([
+        '_id' => new MongoDB\BSON\ObjectId($session_order['order_id'])
+    ]);
+    
+    if (!$order) {
+        throw new Exception("Order not found in database.");
+    }
+    
+    // Format BSON date for display
+    $formatted_date = $order['ordered_at']->toDateTime()->setTimezone(new DateTimeZone('Asia/Manila'))->format('F j, Y \a\t g:i A');
+    
+} catch (Exception $e) {
+    die("Error fetching receipt: " . $e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -220,7 +242,7 @@ unset($_SESSION['last_order']); // consume receipt
     <div class="receipt-meta">
         <div class="meta-item">
             Order ID
-            <strong><?php echo htmlspecialchars(substr($order['order_id'], -8)); ?>...</strong>
+            <strong><?php echo htmlspecialchars(substr((string)$order['_id'], -8)); ?>...</strong>
         </div>
         <div class="meta-item" style="text-align:center">
             Items
@@ -228,13 +250,16 @@ unset($_SESSION['last_order']); // consume receipt
         </div>
         <div class="meta-item" style="text-align:right">
             Date &amp; Time
-            <strong><?php echo $order['ordered_at']; ?></strong>
+            <strong><?php echo $formatted_date; ?></strong>
         </div>
     </div>
     
     <div class="receipt-address">
         <strong>To be delivered to:</strong>
         <div><?php echo htmlspecialchars($order['delivery_address'] ?? 'N/A'); ?></div>
+        <div style="margin-top: 8px; font-size: 11px; color: #94a3b8;">
+            Assigned Branch: <?php echo htmlspecialchars($order['branch'] ?? 'Default Branch'); ?>
+        </div>
     </div>
 
     <div class="receipt-body">

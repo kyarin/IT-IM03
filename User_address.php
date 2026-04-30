@@ -189,9 +189,19 @@ try {
             </div>
         <?php endif; ?>
 
-        <form action="save_address.php" method="POST">
+        <form action="save_address.php" method="POST" id="addressForm">
             <!-- Hidden: user_id passed from session (not user-editable) -->
             <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user_id); ?>">
+            <!-- Hidden: Coordinates -->
+            <input type="hidden" id="latitude" name="latitude" required>
+            <input type="hidden" id="longitude" name="longitude" required>
+
+            <div class="form-group">
+                <button type="button" id="btnLocation" style="background-color: #d4af37; color: #1e293b; border: none; padding: 10px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                    📍 Get Current Coordinates (Required)
+                </button>
+                <div id="locationStatus" style="font-size: 12px; color: #64748b; margin-top: 6px; text-align: center;">Coordinates not set</div>
+            </div>
 
             <div class="form-group">
                 <label for="region">Region</label>
@@ -238,5 +248,42 @@ try {
             <button type="submit">SAVE ADDRESS & CONTINUE</button>
         </form>
     </div>
+
+    <script>
+        document.getElementById('btnLocation').addEventListener('click', function() {
+            const statusDiv = document.getElementById('locationStatus');
+            
+            if (navigator.geolocation) {
+                statusDiv.textContent = "Fetching coordinates...";
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        document.getElementById('latitude').value = lat;
+                        document.getElementById('longitude').value = lng;
+                        
+                        statusDiv.textContent = `Coordinates captured: ${lat.toFixed(5)}, ${lng.toFixed(5)} ✅`;
+                        statusDiv.style.color = "#66bb6a";
+                    },
+                    function(error) {
+                        statusDiv.textContent = "Error capturing location. Please enable location services.";
+                        statusDiv.style.color = "#dc2626";
+                    }
+                );
+            } else {
+                statusDiv.textContent = "Geolocation is not supported by this browser.";
+                statusDiv.style.color = "#dc2626";
+            }
+        });
+
+        // Optional form validation to ensure coordinates are fetched
+        document.getElementById('addressForm').addEventListener('submit', function(e) {
+            if (!document.getElementById('latitude').value || !document.getElementById('longitude').value) {
+                e.preventDefault();
+                alert("Please get your current coordinates before saving.");
+            }
+        });
+    </script>
 </body>
 </html>
