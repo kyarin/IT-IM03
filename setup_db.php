@@ -17,7 +17,7 @@ try {
             'location' => [
                 'type' => 'Point',
                 // Coordinates somewhere in Nueva Ecija (e.g. Cabanatuan)
-                'coordinates' => [120.973, 15.486] 
+                'coordinates' => [120.973, 15.486]
             ]
         ]);
         echo "Inserted dummy branch.\n";

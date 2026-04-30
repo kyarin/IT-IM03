@@ -344,8 +344,13 @@ ksort($grouped);
                 <?php endforeach; ?>
             </div>
             <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
-                <button type="submit" style="padding: 10px 20px; background: #1e293b; color: #d4af37; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Apply Filters</button>
-                <a href="menu.php" style="font-size: 13px; color: #64748b; text-decoration: underline;">Clear</a>
+                <button type="submit" style="padding: 10px 20px; background: #1e293b; color: #d4af37; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#334155';" onmouseout="this.style.backgroundColor='#1e293b';">Apply Filters</button>
+                <a href="menu.php" title="Clear Filters" style="display: flex; align-items: center; justify-content: center; padding: 10px; background: #f8fafc; color: #64748b; border: 1px solid #cbd5e1; border-radius: 8px; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#fee2e2'; this.style.borderColor='#fca5a5'; this.style.color='#ef4444';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.color='#64748b';">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                    </svg>
+                </a>
             </div>
         </form>
     </div>

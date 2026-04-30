@@ -205,24 +205,33 @@ try {
 
             <div class="form-group">
                 <label for="region">Region</label>
-                <input type="text" id="region" name="region" placeholder="e.g. Region III" required>
+                <select id="region" name="region" required>
+                    <option value="" disabled selected>Select Region...</option>
+                    <option value="Region III" data-code="030000000">Region III (Central Luzon)</option>
+                </select>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label for="province">Province</label>
-                    <input type="text" id="province" name="province" placeholder="e.g. Nueva Ecija" required>
+                    <select id="province" name="province" required disabled>
+                        <option value="" disabled selected>Select Province...</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="city">City / Municipality</label>
-                    <input type="text" id="city" name="city" placeholder="e.g. Cabanatuan City" required>
+                    <select id="city" name="city" required disabled>
+                        <option value="" disabled selected>Select City / Municipality...</option>
+                    </select>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label for="brgy">Barangay</label>
-                    <input type="text" id="brgy" name="brgy" placeholder="e.g. Brgy. 1" required>
+                    <select id="brgy" name="brgy" required disabled>
+                        <option value="" disabled selected>Select Barangay...</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="street">Street</label>
@@ -282,6 +291,113 @@ try {
             if (!document.getElementById('latitude').value || !document.getElementById('longitude').value) {
                 e.preventDefault();
                 alert("Please get your current coordinates before saving.");
+            }
+        });
+
+        // Dynamic address dropdowns using PSGC API
+        const regionSelect = document.getElementById('region');
+        const provinceSelect = document.getElementById('province');
+        const citySelect = document.getElementById('city');
+        const brgySelect = document.getElementById('brgy');
+
+        regionSelect.addEventListener('change', async function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (!selectedOption.dataset.code) return;
+            const code = selectedOption.dataset.code;
+            
+            provinceSelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
+            provinceSelect.disabled = true;
+            citySelect.innerHTML = '<option value="" disabled selected>Select City / Municipality...</option>';
+            citySelect.disabled = true;
+            brgySelect.innerHTML = '<option value="" disabled selected>Select Barangay...</option>';
+            brgySelect.disabled = true;
+
+            try {
+                const response = await fetch(`https://psgc.gitlab.io/api/regions/${code}/provinces/`);
+                const provinces = await response.json();
+                
+                provinces.sort((a, b) => a.name.localeCompare(b.name));
+                
+                provinceSelect.innerHTML = '<option value="" disabled selected>Select Province...</option>';
+                provinces.forEach(prov => {
+                    // ONLY allow Nueva Ecija
+                    if (prov.name.toLowerCase() === 'nueva ecija') {
+                        const option = document.createElement('option');
+                        option.value = prov.name;
+                        option.dataset.code = prov.code;
+                        option.textContent = prov.name;
+                        provinceSelect.appendChild(option);
+                    }
+                });
+                provinceSelect.disabled = false;
+            } catch (error) {
+                console.error('Error fetching provinces:', error);
+                provinceSelect.innerHTML = '<option value="" disabled selected>Error loading provinces</option>';
+            }
+        });
+
+        provinceSelect.addEventListener('change', async function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (!selectedOption.dataset.code) return;
+            const code = selectedOption.dataset.code;
+            
+            citySelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
+            citySelect.disabled = true;
+            brgySelect.innerHTML = '<option value="" disabled selected>Select Barangay...</option>';
+            brgySelect.disabled = true;
+
+            try {
+                const response = await fetch(`https://psgc.gitlab.io/api/provinces/${code}/cities-municipalities/`);
+                const cities = await response.json();
+                
+                cities.sort((a, b) => a.name.localeCompare(b.name));
+                
+                // Cities roughly > 50km from Cabanatuan (HQ) to exclude
+                const excludedCities = ['carranglan', 'pantabangan', 'cuyapo', 'nampicuan', 'talugtug'];
+                
+                citySelect.innerHTML = '<option value="" disabled selected>Select City / Municipality...</option>';
+                cities.forEach(city => {
+                    if (!excludedCities.includes(city.name.toLowerCase())) {
+                        const option = document.createElement('option');
+                        option.value = city.name;
+                        option.dataset.code = city.code;
+                        option.textContent = city.name;
+                        citySelect.appendChild(option);
+                    }
+                });
+                citySelect.disabled = false;
+            } catch (error) {
+                console.error('Error fetching cities:', error);
+                citySelect.innerHTML = '<option value="" disabled selected>Error loading cities</option>';
+            }
+        });
+
+        citySelect.addEventListener('change', async function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (!selectedOption.dataset.code) return;
+            const code = selectedOption.dataset.code;
+            
+            brgySelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
+            brgySelect.disabled = true;
+
+            try {
+                const response = await fetch(`https://psgc.gitlab.io/api/cities-municipalities/${code}/barangays/`);
+                const barangays = await response.json();
+                
+                barangays.sort((a, b) => a.name.localeCompare(b.name));
+                
+                brgySelect.innerHTML = '<option value="" disabled selected>Select Barangay...</option>';
+                barangays.forEach(brgy => {
+                    const option = document.createElement('option');
+                    option.value = brgy.name;
+                    option.dataset.code = brgy.code;
+                    option.textContent = brgy.name;
+                    brgySelect.appendChild(option);
+                });
+                brgySelect.disabled = false;
+            } catch (error) {
+                console.error('Error fetching barangays:', error);
+                brgySelect.innerHTML = '<option value="" disabled selected>Error loading barangays</option>';
             }
         });
     </script>
