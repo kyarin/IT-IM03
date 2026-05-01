@@ -86,8 +86,15 @@ try {
                 '$geoNear' => [
                     'near' => ['type' => 'Point', 'coordinates' => [(float)$userLong, (float)$userLat]],
                     'distanceField' => 'dist.calculated', 
-                    'maxDistance' => 50000, 
+                    'maxDistance' => 100000, 
                     'spherical' => true
+                ]
+            ],
+            [
+                '$match' => [
+                    '$expr' => [
+                        '$lte' => ['$dist.calculated', '$delivery_radius']
+                    ]
                 ]
             ],
             ['$limit' => 1]
@@ -96,7 +103,7 @@ try {
         $nearestBranch = $branchesCollection->aggregate($pipeline)->toArray();
 
         if (empty($nearestBranch)) {
-            die("Error: Address is out of the 50km delivery range.");
+            die("Error: Address is outside the delivery radius of all our branches.");
         }
 
         $distanceInMeters = $nearestBranch[0]['dist']['calculated'];

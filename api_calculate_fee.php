@@ -39,8 +39,15 @@ try {
             '$geoNear' => [
                 'near' => ['type' => 'Point', 'coordinates' => [(float)$userLong, (float)$userLat]],
                 'distanceField' => 'dist.calculated', 
-                'maxDistance' => 50000, 
+                'maxDistance' => 100000, // 100km global max for performance
                 'spherical' => true
+            ]
+        ],
+        [
+            '$match' => [
+                '$expr' => [
+                    '$lte' => ['$dist.calculated', '$delivery_radius']
+                ]
             ]
         ],
         ['$limit' => 1]
@@ -51,7 +58,7 @@ try {
     if (empty($nearestBranch)) {
         echo json_encode([
             'status' => 'out_of_range', 
-            'message' => "Paimon can't fly that far! The selected address is out of our 50km delivery zone."
+            'message' => "Paimon can't fly that far! The selected address is outside the delivery radius of all our branches."
         ]);
         exit;
     }

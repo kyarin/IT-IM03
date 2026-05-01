@@ -5,23 +5,66 @@ try {
     $conn = new MongoDB\Client("mongodb://localhost:27017");
     $db = $conn->paimon_db;
 
-    // 1. Create 2dsphere index on branches
+    // 1. Reset and Recreate Branches Collection
+    $db->branches->drop();
     $branches = $db->branches;
     $branches->createIndex(['location' => '2dsphere']);
     echo "Created 2dsphere index on branches.\n";
 
-    // Insert a dummy branch if empty
-    if ($branches->countDocuments() === 0) {
-        $branches->insertOne([
-            'name' => 'Mondstadt HQ',
-            'location' => [
-                'type' => 'Point',
-                // Coordinates somewhere in Nueva Ecija (e.g. Cabanatuan)
-                'coordinates' => [120.973, 15.486]
-            ]
-        ]);
-        echo "Inserted dummy branch.\n";
-    }
+    $branchData = [
+        [
+            'name' => 'Mondstadt HQ', // Cabanatuan
+            'location' => ['type' => 'Point', 'coordinates' => [120.973, 15.486]],
+            'delivery_radius' => 20000 // 20km
+        ],
+        [
+            'name' => 'Liyue Harbor Branch', // Palayan City
+            'location' => ['type' => 'Point', 'coordinates' => [121.085, 15.541]],
+            'delivery_radius' => 15000 // 15km
+        ],
+        [
+            'name' => 'Inazuma City Branch', // Gapan City
+            'location' => ['type' => 'Point', 'coordinates' => [120.947, 15.313]],
+            'delivery_radius' => 15000
+        ],
+        [
+            'name' => 'Sumeru Akademiya Branch', // San Jose City
+            'location' => ['type' => 'Point', 'coordinates' => [120.988, 15.795]],
+            'delivery_radius' => 20000
+        ],
+        [
+            'name' => 'Fontaine Court Branch', // Science City of Muñoz
+            'location' => ['type' => 'Point', 'coordinates' => [120.902, 15.716]],
+            'delivery_radius' => 15000
+        ],
+        [
+            'name' => 'Natlan Outpost', // Guimba
+            'location' => ['type' => 'Point', 'coordinates' => [120.768, 15.659]],
+            'delivery_radius' => 12000
+        ],
+        [
+            'name' => 'Snezhnaya Palace Branch', // Talavera
+            'location' => ['type' => 'Point', 'coordinates' => [120.916, 15.583]],
+            'delivery_radius' => 12000
+        ],
+        [
+            'name' => 'Dragonspine Outpost', // Aliaga
+            'location' => ['type' => 'Point', 'coordinates' => [120.851, 15.502]],
+            'delivery_radius' => 10000
+        ],
+        [
+            'name' => 'Watatsumi Island Branch', // Santa Rosa
+            'location' => ['type' => 'Point', 'coordinates' => [120.939, 15.424]],
+            'delivery_radius' => 10000
+        ],
+        [
+            'name' => 'Port Ormos Branch', // San Leonardo
+            'location' => ['type' => 'Point', 'coordinates' => [120.963, 15.364]],
+            'delivery_radius' => 10000
+        ]
+    ];
+    $branches->insertMany($branchData);
+    echo "Inserted 10 branches across Nueva Ecija with dynamic delivery radii.\n";
 
     // 2. Seed menu collection if empty
     $menuCollection = $db->menu;
