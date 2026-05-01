@@ -236,7 +236,7 @@ try {
     <div class="receipt-header">
         <div class="check-icon">✓</div>
         <div class="receipt-title">Order Confirmed!</div>
-        <div class="receipt-subtitle">Thank you, <strong><?php echo htmlspecialchars($user_name); ?></strong> 🎉</div>
+        <div class="receipt-subtitle">Thank you, <strong><?php echo htmlspecialchars($user_name); ?></strong></div>
     </div>
 
     <div class="receipt-meta">
@@ -263,12 +263,18 @@ try {
     </div>
 
     <div class="receipt-body">
-        <div class="section-label">🧾 Order Summary</div>
+        <div class="section-label">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align:-3px; margin-right:4px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Order Summary
+        </div>
 
         <?php
-        $rarityColors = [1 => '#90a4ae', 2 => '#66bb6a', 3 => '#42a5f5', 5 => '#ffa726'];
-        $rarityStars  = [1 => '⭐', 2 => '⭐⭐', 3 => '⭐⭐⭐', 5 => '⭐⭐⭐⭐⭐'];
-        foreach ($order['items'] as $item):
+        $rarityColors = [1 => '#90a4ae', 2 => '#66bb6a', 3 => '#42a5f5', 4 => '#ba68c8', 5 => '#ffa726'];
+        $starSvg = '<svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="vertical-align:-1px; color:#f59e0b;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>';
+        $rarityStars  = [1 => str_repeat($starSvg, 1), 2 => str_repeat($starSvg, 2), 3 => str_repeat($starSvg, 3), 4 => str_repeat($starSvg, 4), 5 => str_repeat($starSvg, 5)];
+        foreach ($order['items'] as $item): 
             $color = $rarityColors[$item['rarity']] ?? '#94a3b8';
             $stars = $rarityStars[$item['rarity']] ?? '';
         ?>
@@ -293,7 +299,12 @@ try {
     </div>
 
     <div class="receipt-actions">
-        <a href="menu.php" class="btn-order-again">🍜 Order Again</a>
+        <a href="menu.php" class="btn-order-again">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align:-3px; margin-right:6px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+            </svg>
+            Order Again
+        </a>
         <a href="logout.php" class="btn-logout">Logout</a>
     </div>
 

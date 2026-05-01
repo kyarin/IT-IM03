@@ -19,7 +19,7 @@ try {
 
     $existingAddress = $addressCollection->findOne(["user_id" => $user_id]);
 
-    if ($existingAddress) {
+    if ($existingAddress && !isset($_GET['add_new']) && !isset($_GET['success'])) {
         // Address exists → proceed to ordering
         header("Location: menu.php"); 
         exit;
@@ -174,7 +174,12 @@ try {
 </head>
 <body>
     <div class="address-container">
-        <div class="welcome-badge">👋 Welcome, <span><?php echo htmlspecialchars($user_name); ?></span>! Please set up your delivery address.</div>
+        <div class="welcome-badge">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -3px; margin-right: 4px; color: #d4af37;">
+                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+            </svg>
+            Welcome, <span><?php echo htmlspecialchars($user_name); ?></span>! Please set up your delivery address.
+        </div>
 
         <h2>Delivery Address</h2>
         <p class="subtitle">We need your address before you can place an order.</p>
@@ -189,16 +194,46 @@ try {
             </div>
         <?php endif; ?>
 
+        <?php if (isset($_GET['success'])): ?>
+            <div style="text-align: center; padding: 20px 0;">
+                <div style="margin-bottom: 15px; color: #16a34a;">
+                    <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h2 style="border-bottom: none; color: #16a34a; margin-bottom: 15px;">Address Saved!</h2>
+                <p style="color: #475569; margin-bottom: 30px; font-size: 15px; line-height: 1.5;">Your delivery address has been successfully saved. Would you like to add another address or proceed to the menu to order?</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <a href="menu.php" style="display: flex; align-items: center; justify-content: center; gap: 8px; background-color: #1e293b; color: #d4af37; border: 2px solid #d4af37; padding: 14px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: bold; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        Proceed to Menu
+                    </a>
+                    <a href="User_address.php?add_new=1" style="display: flex; align-items: center; justify-content: center; gap: 8px; background-color: #f8fafc; color: #475569; border: 2px solid #cbd5e1; padding: 14px; border-radius: 8px; text-decoration: none; font-size: 15px; font-weight: bold; transition: all 0.2s;">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Add Another Address
+                    </a>
+                </div>
+            </div>
+        <?php else: ?>
+
         <form action="save_address.php" method="POST" id="addressForm">
             <!-- Hidden: user_id passed from session (not user-editable) -->
             <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user_id); ?>">
-            <!-- Hidden: Coordinates -->
-            <input type="hidden" id="latitude" name="latitude" required>
-            <input type="hidden" id="longitude" name="longitude" required>
+            <!-- Coordinates -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="latitude">Latitude</label>
+                    <input type="text" id="latitude" name="latitude" placeholder="e.g. 15.486" required>
+                </div>
+                <div class="form-group">
+                    <label for="longitude">Longitude</label>
+                    <input type="text" id="longitude" name="longitude" placeholder="e.g. 120.973" required>
+                </div>
+            </div>
 
             <div class="form-group">
                 <button type="button" id="btnLocation" style="background-color: #d4af37; color: #1e293b; border: none; padding: 10px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                    📍 Get Current Coordinates (Required)
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Get Current Coordinates (Required)
                 </button>
                 <div id="locationStatus" style="font-size: 12px; color: #64748b; margin-top: 6px; text-align: center;">Coordinates not set</div>
             </div>
@@ -246,16 +281,13 @@ try {
                 </div>
                 <div class="form-group">
                     <label for="label">Address Label</label>
-                    <select id="label" name="label" required>
-                        <option value="" disabled selected>Select label...</option>
-                        <option value="home">🏠 Home</option>
-                        <option value="work">💼 Work</option>
-                    </select>
+                    <input type="text" id="label" name="label" placeholder="e.g. Home, Dorm, Office" required>
                 </div>
             </div>
 
             <button type="submit">SAVE ADDRESS & CONTINUE</button>
         </form>
+        <?php endif; ?>
     </div>
 
     <script>
@@ -272,7 +304,7 @@ try {
                         document.getElementById('latitude').value = lat;
                         document.getElementById('longitude').value = lng;
                         
-                        statusDiv.textContent = `Coordinates captured: ${lat.toFixed(5)}, ${lng.toFixed(5)} ✅`;
+                        statusDiv.innerHTML = `Coordinates captured: ${lat.toFixed(5)}, ${lng.toFixed(5)} <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align:-2px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
                         statusDiv.style.color = "#66bb6a";
                     },
                     function(error) {

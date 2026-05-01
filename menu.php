@@ -55,12 +55,13 @@ try {
     die("Database Error: " . $e->getMessage());
 }
 
+$starSvg = '<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="vertical-align:-2px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>';
 $rarityConfig = [
-    1 => ['label' => '1-Star', 'stars' => '⭐', 'color' => '#90a4ae', 'glow' => 'rgba(144,164,174,0.25)'],
-    2 => ['label' => '2-Star', 'stars' => '⭐⭐', 'color' => '#66bb6a', 'glow' => 'rgba(102,187,106,0.25)'],
-    3 => ['label' => '3-Star', 'stars' => '⭐⭐⭐', 'color' => '#42a5f5', 'glow' => 'rgba(66,165,245,0.25)'],
-    4 => ['label' => '4-Star', 'stars' => '⭐⭐⭐⭐', 'color' => '#ab47bc', 'glow' => 'rgba(171,71,188,0.25)'], // Added 4-star just in case
-    5 => ['label' => '5-Star', 'stars' => '⭐⭐⭐⭐⭐', 'color' => '#ffa726', 'glow' => 'rgba(255,167,38,0.35)'],
+    1 => ['label' => '1-Star', 'stars' => str_repeat($starSvg, 1), 'color' => '#90a4ae', 'glow' => 'rgba(144,164,174,0.25)'],
+    2 => ['label' => '2-Star', 'stars' => str_repeat($starSvg, 2), 'color' => '#66bb6a', 'glow' => 'rgba(102,187,106,0.25)'],
+    3 => ['label' => '3-Star', 'stars' => str_repeat($starSvg, 3), 'color' => '#42a5f5', 'glow' => 'rgba(66,165,245,0.25)'],
+    4 => ['label' => '4-Star', 'stars' => str_repeat($starSvg, 4), 'color' => '#ab47bc', 'glow' => 'rgba(171,71,188,0.25)'], 
+    5 => ['label' => '5-Star', 'stars' => str_repeat($starSvg, 5), 'color' => '#ffa726', 'glow' => 'rgba(255,167,38,0.35)'],
 ];
 
 $grouped = [];
@@ -311,7 +312,12 @@ ksort($grouped);
 
     <!-- TOP BAR -->
     <header class="top-bar">
-        <div class="brand">🍴 Paimon's <span>Kitchen</span></div>
+        <div class="brand">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align:-3px; margin-right:4px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            Paimon's <span>Kitchen</span>
+        </div>
         <div class="user-section">
             <span class="user-greeting">Welcome, <strong><?php echo htmlspecialchars($user_name); ?></strong></span>
             <a href="logout.php" class="logout-btn">Logout</a>
@@ -398,7 +404,12 @@ ksort($grouped);
 
         <!-- FLOATING BOTTOM BAR -->
         <div class="floating-bar">
-            <button type="submit" class="place-order-btn">🍜 Place Order</button>
+            <button type="submit" class="place-order-btn">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align:-4px; margin-right:6px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+                Place Order
+            </button>
         </div>
         
     </form>

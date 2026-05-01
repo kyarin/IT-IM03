@@ -57,8 +57,8 @@ try {
         "created_at" => new MongoDB\BSON\UTCDateTime()
     ]);
 
-    // Address saved > proceed to ordering 
-    header("Location: menu.php"); 
+    // Address saved > redirect back with success message
+    header("Location: User_address.php?success=1"); 
     exit;
 
 } catch (Exception $e) {
