@@ -33,24 +33,36 @@ try {
         $success_message = "Food item '$name' added successfully!";
     }
 
-    // Handle form submission to deactivate a food item
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'deactivate_item') {
+    // Handle form submission to update item status
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && in_array($_POST['action'], ['activate_item', 'deactivate_item'])) {
         $item_id = $_POST['item_id'];
+        $new_status = ($_POST['action'] === 'activate_item') ? 'active' : 'inactive';
 
         $menuCollection->updateOne(
             ['_id' => new MongoDB\BSON\ObjectId($item_id)],
-            ['$set' => ['status' => 'inactive']]
+            ['$set' => ['status' => $new_status]]
         );
 
-        $success_message = "Item successfully deactivated and removed from the public menu.";
+        $success_message = "Item successfully " . ($new_status === 'active' ? 'activated' : 'deactivated') . "!";
     }
 
-    // Unit 5, Variation 3: Projection 1 (Fetch ONLY item_name for active items)
-    $itemNamesCursor = $menuCollection->find(
-        ['status' => ['$ne' => 'inactive']],
-        ['projection' => ['name' => 1, '_id' => 1]]
+    // Handle form submission to permanently delete an item
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_item') {
+        $item_id = $_POST['item_id'];
+
+        $menuCollection->deleteOne(
+            ['_id' => new MongoDB\BSON\ObjectId($item_id)]
+        );
+
+        $success_message = "Item permanently deleted from the database.";
+    }
+
+    // Unit 5, Variation 3: Projection 1 (Fetch ONLY specific fields for all items)
+    $inventoryCursor = $menuCollection->find(
+        [],
+        ['projection' => ['name' => 1, 'price' => 1, 'category' => 1, 'status' => 1, '_id' => 1]]
     );
-    $itemNames = iterator_to_array($itemNamesCursor);
+    $inventoryItems = iterator_to_array($inventoryCursor);
 
     // Unit 5, Variation 5: Parameter + Projection 1 (Find total_price of delivered orders)
     $totalsCursor = $ordersCollection->find(
@@ -123,6 +135,7 @@ try {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 24px;
+            align-items: start;
         }
 
         .card {
@@ -339,30 +352,54 @@ try {
                     Manage Inventory
                 </h2>
 
-                <div class="dropdown-showcase">
-                    <form action="admin.php" method="POST" style="display: flex; flex-direction: column; gap: 10px;">
-                        <input type="hidden" name="action" value="deactivate_item">
-                        <label>Select Item to Deactivate</label>
-                        <select name="item_id" required>
-                            <option value="" disabled selected>-- Select an active item --</option>
-                            <?php foreach ($itemNames as $item): ?>
-                                <option value="<?php echo htmlspecialchars((string) $item['_id']); ?>">
-                                    <?php echo htmlspecialchars($item['name'] ?? 'Unknown Item'); ?>
-                                </option>
+                <div class="table-container" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                        <thead>
+                            <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                                <th style="padding: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">Name</th>
+                                <th style="padding: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">Category</th>
+                                <th style="padding: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">Price</th>
+                                <th style="padding: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">Status</th>
+                                <th style="padding: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($inventoryItems as $item): 
+                                $is_active = (!isset($item['status']) || $item['status'] !== 'inactive');
+                            ?>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 12px; font-weight: 500;"><?php echo htmlspecialchars($item['name'] ?? 'Unknown'); ?></td>
+                                    <td style="padding: 12px;"><?php echo htmlspecialchars($item['category'] ?? '-'); ?></td>
+                                    <td style="padding: 12px;">₱<?php echo number_format($item['price'] ?? 0); ?></td>
+                                    <td style="padding: 12px;">
+                                        <?php if ($is_active): ?>
+                                            <span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 600;">Active</span>
+                                        <?php else: ?>
+                                            <span style="background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 600;">Inactive</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td style="padding: 12px; text-align: right;">
+                                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                            <form action="admin.php" method="POST" style="margin: 0;">
+                                                <input type="hidden" name="action" value="<?php echo $is_active ? 'deactivate_item' : 'activate_item'; ?>">
+                                                <input type="hidden" name="item_id" value="<?php echo htmlspecialchars((string) $item['_id']); ?>">
+                                                <button type="submit" style="padding: 6px 12px; font-size: 12px; width: auto; background: <?php echo $is_active ? '#f59e0b' : '#10b981'; ?>; color: white;" onclick="return confirm('Change status for this item?');">
+                                                    <?php echo $is_active ? 'Deactivate' : 'Activate'; ?>
+                                                </button>
+                                            </form>
+                                            <form action="admin.php" method="POST" style="margin: 0;">
+                                                <input type="hidden" name="action" value="delete_item">
+                                                <input type="hidden" name="item_id" value="<?php echo htmlspecialchars((string) $item['_id']); ?>">
+                                                <button type="submit" style="padding: 6px 12px; font-size: 12px; width: auto; background: #ef4444; color: white;" onclick="return confirm('WARNING: Are you sure you want to permanently delete this item? This action cannot be undone.');">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
-                        </select>
-                        <button type="submit"
-                            style="background: #ef4444; color: white; border-radius: 8px; font-size: 14px; padding: 10px;"
-                            onclick="return confirm('Are you sure you want to hide this item from the menu?');">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                style="vertical-align:-2px; margin-right: 4px;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                </path>
-                            </svg>
-                            Deactivate Item
-                        </button>
-                    </form>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

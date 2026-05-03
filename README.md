@@ -46,8 +46,8 @@ If you have just pulled this code, you MUST run the initialization script to set
    - **Location:** `order_success.php` (Line ~20)
    - **Purpose:** Fetches the specific order details using the `_id` to display the final receipt.
 3. **Projection 1 (Include specific attributes only)**
-   - **Location:** `admin.php` (Line ~43)
-   - **Purpose:** Fetches *only* the `name` and `_id` of food items to efficiently populate the "Deactivate Item" dropdown without wasting memory.
+   - **Location:** `admin.php` (Line ~53)
+   - **Purpose:** Fetches *only* the specific fields needed (`name`, `price`, `category`, `status`, `_id`) of food items to efficiently populate the "Manage Inventory" table without wasting memory.
 4. **Projection 0 (Exclude specific attributes)**
    - **Location:** `menu.php` (Line ~22)
    - **Purpose:** Fetches the logged-in user's data for the header greeting, explicitly excluding the sensitive `password` field from the result.

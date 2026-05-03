@@ -99,12 +99,11 @@ Here is how the 5 required MongoDB queries translate into standard SQL queries.
     ```
 
 ### Variation 3: Projection 1 (Include)
-**Goal:** Fetch ONLY specific columns to save memory (e.g., populating a dropdown with just the item names and IDs).
-*   **MongoDB:** `$menuCollection->find(['status' => ['$ne' => 'inactive']], ['projection' => ['name' => 1, '_id' => 1]]);`
+**Goal:** Fetch ONLY specific columns to save memory (e.g., fetching only the fields needed to populate the inventory management table).
+*   **MongoDB:** `$menuCollection->find([], ['projection' => ['name' => 1, 'price' => 1, 'category' => 1, 'status' => 1, '_id' => 1]]);`
 *   **MySQL:** In SQL, projection simply means specifying the exact columns you want after the `SELECT` statement, instead of using `*`.
     ```sql
-    SELECT id, name FROM menu 
-    WHERE status != 'inactive';
+    SELECT id, name, price, category, status FROM menu;
     ```
 
 ### Variation 4: Projection 0 (Exclude)
