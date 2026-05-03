@@ -32,22 +32,22 @@ try {
         'status' => ['$ne' => 'inactive'] // Exclude deactivated items
     ];
 
-    // Unit 8, Operator 2: $regex (Search)
+    //$regex (Search)
     if (!empty($_GET['search'])) {
         $query['name'] = ['$regex' => $_GET['search'], '$options' => 'i'];
     }
 
-    // Unit 8, Operator 1: $lt (Budget meals < 150)
+    //$lt (Budget meals < 150)
     if (isset($_GET['budget']) && $_GET['budget'] === '1') {
         $query['price'] = ['$lt' => 150];
     }
 
-    // Unit 8, Operator 3: $in (Categories)
+    //$in (Categories)
     if (!empty($_GET['categories']) && is_array($_GET['categories'])) {
         $query['category'] = ['$in' => $_GET['categories']];
     }
 
-    // Unit 5, Variation 1: Empty/Base Find (Retrieving all documents when $query is empty)
+    // Empty/Base Find (Retrieving all documents when $query is empty)
     $menuCursor = $menuCollection->find($query);
     $menuItems = iterator_to_array($menuCursor);
 

@@ -7,6 +7,7 @@ try {
 
     // 1. Reset and Recreate Branches Collection
     $db->branches->drop();
+    echo "Dropped branches collection.\n";
     $branches = $db->branches;
     $branches->createIndex(['location' => '2dsphere']);
     echo "Created 2dsphere index on branches.\n";
